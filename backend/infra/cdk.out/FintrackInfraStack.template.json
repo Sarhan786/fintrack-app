@@ -1,0 +1,663 @@
+{
+ "Resources": {
+  "FintrackUserPool0381E6CD": {
+   "Type": "AWS::Cognito::UserPool",
+   "Properties": {
+    "AccountRecoverySetting": {
+     "RecoveryMechanisms": [
+      {
+       "Name": "verified_email",
+       "Priority": 1
+      }
+     ]
+    },
+    "AdminCreateUserConfig": {
+     "AllowAdminCreateUserOnly": false
+    },
+    "AutoVerifiedAttributes": [
+     "email"
+    ],
+    "EmailVerificationMessage": "The verification code to your new account is {####}",
+    "EmailVerificationSubject": "Verify your new account",
+    "Policies": {
+     "PasswordPolicy": {
+      "MinimumLength": 8,
+      "RequireLowercase": true,
+      "RequireNumbers": true,
+      "RequireSymbols": false,
+      "RequireUppercase": true
+     }
+    },
+    "Schema": [
+     {
+      "Mutable": false,
+      "Name": "email",
+      "Required": true
+     },
+     {
+      "Mutable": true,
+      "Name": "given_name",
+      "Required": true
+     }
+    ],
+    "SmsVerificationMessage": "The verification code to your new account is {####}",
+    "UserPoolName": "fintrack-user-pool",
+    "VerificationMessageTemplate": {
+     "DefaultEmailOption": "CONFIRM_WITH_CODE",
+     "EmailMessage": "The verification code to your new account is {####}",
+     "EmailSubject": "Verify your new account",
+     "SmsMessage": "The verification code to your new account is {####}"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "FintrackInfraStack/FintrackUserPool/Resource"
+   }
+  },
+  "FintrackUserPoolClient3B86247B": {
+   "Type": "AWS::Cognito::UserPoolClient",
+   "Properties": {
+    "AllowedOAuthFlows": [
+     "implicit",
+     "code"
+    ],
+    "AllowedOAuthFlowsUserPoolClient": true,
+    "AllowedOAuthScopes": [
+     "profile",
+     "phone",
+     "email",
+     "openid",
+     "aws.cognito.signin.user.admin"
+    ],
+    "CallbackURLs": [
+     "https://example.com"
+    ],
+    "SupportedIdentityProviders": [
+     "COGNITO"
+    ],
+    "UserPoolId": {
+     "Ref": "FintrackUserPool0381E6CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "FintrackInfraStack/FintrackUserPoolClient/Resource"
+   }
+  },
+  "FintrackGraphQLApi9F4E8780": {
+   "Type": "AWS::AppSync::GraphQLApi",
+   "Properties": {
+    "AuthenticationType": "AMAZON_COGNITO_USER_POOLS",
+    "Name": "fintrack-graphql-api",
+    "UserPoolConfig": {
+     "AwsRegion": {
+      "Ref": "AWS::Region"
+     },
+     "DefaultAction": "ALLOW",
+     "UserPoolId": {
+      "Ref": "FintrackUserPool0381E6CD"
+     }
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "FintrackInfraStack/FintrackGraphQLApi/Resource"
+   }
+  },
+  "FintrackGraphQLApiSchema40779F7E": {
+   "Type": "AWS::AppSync::GraphQLSchema",
+   "Properties": {
+    "ApiId": {
+     "Fn::GetAtt": [
+      "FintrackGraphQLApi9F4E8780",
+      "ApiId"
+     ]
+    },
+    "Definition": "type User {\r\n    id: ID!\r\n    email: String!\r\n    name: String!\r\n}\r\n\r\ninput RegisterUserInput {\r\n    name: String!\r\n    email: String!\r\n    password: String!\r\n}\r\n\r\ninput LoginInput {\r\n    email: String!\r\n    password: String!\r\n}\r\n\r\ntype AuthPayload {\r\n    accessToken: String!\r\n    user: User!\r\n}\r\n\r\ntype Mutation {\r\n    registerUser(input: RegisterUserInput!): User\r\n    login(input: LoginInput!): AuthPayload\r\n}\r\n\r\ntype Query {\r\n    getMe: User\r\n}"
+   },
+   "Metadata": {
+    "aws:cdk:path": "FintrackInfraStack/FintrackGraphQLApi/Schema"
+   }
+  },
+  "FintrackGraphQLApiUsersLambdaDataSourceServiceRole5ABE745E": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "appsync.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "FintrackInfraStack/FintrackGraphQLApi/UsersLambdaDataSource/ServiceRole/Resource"
+   }
+  },
+  "FintrackGraphQLApiUsersLambdaDataSourceServiceRoleDefaultPolicy0FC19FE7": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "lambda:InvokeFunction",
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "UsersServiceLambda549AB230",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "UsersServiceLambda549AB230",
+             "Arn"
+            ]
+           },
+           ":*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "FintrackGraphQLApiUsersLambdaDataSourceServiceRoleDefaultPolicy0FC19FE7",
+    "Roles": [
+     {
+      "Ref": "FintrackGraphQLApiUsersLambdaDataSourceServiceRole5ABE745E"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "FintrackInfraStack/FintrackGraphQLApi/UsersLambdaDataSource/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "FintrackGraphQLApiUsersLambdaDataSourceA36EA763": {
+   "Type": "AWS::AppSync::DataSource",
+   "Properties": {
+    "ApiId": {
+     "Fn::GetAtt": [
+      "FintrackGraphQLApi9F4E8780",
+      "ApiId"
+     ]
+    },
+    "LambdaConfig": {
+     "LambdaFunctionArn": {
+      "Fn::GetAtt": [
+       "UsersServiceLambda549AB230",
+       "Arn"
+      ]
+     }
+    },
+    "Name": "UsersLambdaDataSource",
+    "ServiceRoleArn": {
+     "Fn::GetAtt": [
+      "FintrackGraphQLApiUsersLambdaDataSourceServiceRole5ABE745E",
+      "Arn"
+     ]
+    },
+    "Type": "AWS_LAMBDA"
+   },
+   "Metadata": {
+    "aws:cdk:path": "FintrackInfraStack/FintrackGraphQLApi/UsersLambdaDataSource/Resource"
+   }
+  },
+  "FintrackGraphQLApiregisterUserResolver178D79A2": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Fn::GetAtt": [
+      "FintrackGraphQLApi9F4E8780",
+      "ApiId"
+     ]
+    },
+    "DataSourceName": "UsersLambdaDataSource",
+    "FieldName": "registerUser",
+    "Kind": "UNIT",
+    "TypeName": "Mutation"
+   },
+   "DependsOn": [
+    "FintrackGraphQLApiSchema40779F7E",
+    "FintrackGraphQLApiUsersLambdaDataSourceA36EA763"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "FintrackInfraStack/FintrackGraphQLApi/registerUserResolver/Resource"
+   }
+  },
+  "FintrackGraphQLApiloginResolver4255AD7B": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Fn::GetAtt": [
+      "FintrackGraphQLApi9F4E8780",
+      "ApiId"
+     ]
+    },
+    "DataSourceName": "UsersLambdaDataSource",
+    "FieldName": "login",
+    "Kind": "UNIT",
+    "TypeName": "Mutation"
+   },
+   "DependsOn": [
+    "FintrackGraphQLApiSchema40779F7E",
+    "FintrackGraphQLApiUsersLambdaDataSourceA36EA763"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "FintrackInfraStack/FintrackGraphQLApi/loginResolver/Resource"
+   }
+  },
+  "UsersServiceLambdaServiceRole9255683A": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "FintrackInfraStack/UsersServiceLambda/ServiceRole/Resource"
+   }
+  },
+  "UsersServiceLambda549AB230": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "930eeeff5de307740dd461c68836cba1e06aed2072ccf5865dc498df6384ad3e.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "USER_POOL_ID": {
+       "Ref": "FintrackUserPool0381E6CD"
+      },
+      "USER_POOL_CLIENT_ID": {
+       "Ref": "FintrackUserPoolClient3B86247B"
+      }
+     }
+    },
+    "Handler": "index.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "UsersServiceLambdaServiceRole9255683A",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs18.x"
+   },
+   "DependsOn": [
+    "UsersServiceLambdaServiceRole9255683A"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "FintrackInfraStack/UsersServiceLambda/Resource",
+    "aws:asset:path": "asset.930eeeff5de307740dd461c68836cba1e06aed2072ccf5865dc498df6384ad3e",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/1WNwW7CMBBEv4W7sw3h0DNQlQtSaaKe0eK4sMSx06wNQpb/vbKjVPQ0b3ZGOxVUyxLKBd65kG1XaDpBaBzKTuCdj0HasyFnIXyxGg/WarH9Nn88w1aTMu45mi5R4DDww0gIuxGHy49eD5Rq2X3u/7tGXlSPYo/9qcU3dNhYP0qVGk+uVmz1TY3pPHMUhD2E2urcznqwmuQj2Ymi0PkxhHdvpCNrUjZzFLw6IrNyDOskglew8bJTboOsYp7N+zltHJ7JnNOHD+8G76IwtlVw5ZdbVcLyFcrFlYmK0RtHvYJ60l8nojLEbwEAAA=="
+   },
+   "Metadata": {
+    "aws:cdk:path": "FintrackInfraStack/CDKMetadata/Default"
+   },
+   "Condition": "CDKMetadataAvailable"
+  }
+ },
+ "Outputs": {
+  "GraphQLApiUrl": {
+   "Value": {
+    "Fn::GetAtt": [
+     "FintrackGraphQLApi9F4E8780",
+     "GraphQLUrl"
+    ]
+   }
+  },
+  "UserPoolId": {
+   "Value": {
+    "Ref": "FintrackUserPool0381E6CD"
+   }
+  },
+  "UserPoolClientId": {
+   "Value": {
+    "Ref": "FintrackUserPoolClient3B86247B"
+   }
+  }
+ },
+ "Conditions": {
+  "CDKMetadataAvailable": {
+   "Fn::Or": [
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "af-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-3"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-4"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-northwest-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-2"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "il-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "sa-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-west-1"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Equals": [
+      {
+       "Ref": "AWS::Region"
+      },
+      "us-west-2"
+     ]
+    }
+   ]
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

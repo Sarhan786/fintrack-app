@@ -1,18 +1,20 @@
-import * as cdk from '@aws-cdk/core';
-import * as cognito from '@aws-cdk/aws-cognito';
-import * as appsync from '@aws-cdk/aws-appsync';
-import * as lambda from '@aws-cdk/aws-lambda';
+import * as cdk from 'aws-cdk-lib';
+import { Construct } from 'constructs';
+import * as cognito from 'aws-cdk-lib/aws-cognito';
+import * as appsync from 'aws-cdk-lib/aws-appsync';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as path from 'path';
 
+// Note: We now import from 'aws-cdk-lib' and 'constructs', not '@aws-cdk/core'.
+
 export class InfraStack extends cdk.Stack {
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
     // --- 1. AWS Cognito User Pool ---
-    // This service will store and manage all our user accounts securely.
-    const userPool = new cognito.UserPool(this, 'FinTrackUserPool', {
+    const userPool = new cognito.UserPool(this, 'FintrackUserPool', {
       userPoolName: 'fintrack-user-pool',
-      selfSignUpEnabled: true, // Allow users to sign up themselves
+      selfSignUpEnabled: true,
       accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
       userVerification: {
         emailStyle: cognito.VerificationEmailStyle.CODE,
@@ -35,23 +37,21 @@ export class InfraStack extends cdk.Stack {
         requireLowercase: true,
         requireUppercase: true,
         requireDigits: true,
-        requireSymbols: false,
+        requireSymbols: false, // Set to false for simplicity during development
       },
-      removalPolicy: cdk.RemovalPolicy.DESTROY, // Deletes the pool if the stack is deleted
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
     // --- 2. Cognito User Pool Client ---
-    // This is the "app" that our frontend will use to interact with the User Pool.
-    const userPoolClient = new cognito.UserPoolClient(this, 'FinTrackUserPoolClient', {
+    const userPoolClient = new cognito.UserPoolClient(this, 'FintrackUserPoolClient', {
       userPool,
     });
 
 
     // --- 3. AWS AppSync GraphQL API ---
-    // This is our main API endpoint. AppSync is a managed GraphQL service.
-    const api = new appsync.GraphqlApi(this, 'FinTrackGraphQLApi', {
+    const api = new appsync.GraphqlApi(this, 'FintrackGraphQLApi', {
       name: 'fintrack-graphql-api',
-      schema: appsync.Schema.fromAsset(path.join(__dirname, 'schema.graphql')),
+      schema: appsync.SchemaFile.fromAsset(path.join(__dirname, 'schema.graphql')),
       authorizationConfig: {
         defaultAuthorization: {
           authorizationType: appsync.AuthorizationType.USER_POOL,
@@ -63,40 +63,31 @@ export class InfraStack extends cdk.Stack {
     });
 
     // --- 4. `users-service` Lambda Function ---
-    // This is our first microservice. It will handle user-related business logic.
+    // Placeholder code for now. We will add real code in the next step.
     const usersLambda = new lambda.Function(this, 'UsersServiceLambda', {
-      runtime: lambda.Runtime.NODEJS_18_X,
-      handler: 'index.handler', // Assumes the handler function is exported from index.js
-      code: lambda.Code.fromAsset(path.join(__dirname, '../../../services/users-service/dist')),
+      runtime: lambda.Runtime.NODEJS_18_X, // This is now correct with CDK v2
+      handler: 'index.handler',
+      code: lambda.Code.fromAsset(path.join(__dirname, '../../services/users-service/src')), // Pointing to src for now
       environment: {
         USER_POOL_ID: userPool.userPoolId,
         USER_POOL_CLIENT_ID: userPoolClient.userPoolClientId,
       }
     });
 
-    // Grant the Lambda function permission to interact with our Cognito User Pool
-    userPool.grant(usersLambda, 'cognito-idp:AdminCreateUser', 'cognito-idp:AdminInitiateAuth');
-
     // --- 5. Connect Lambda to AppSync API ---
-    // Set the Lambda function as a data source for the API.
     const lambdaDataSource = api.addLambdaDataSource('UsersLambdaDataSource', usersLambda);
 
-    // Create resolvers to connect our GraphQL schema mutations to the Lambda data source.
-    // When a `registerUser` mutation is received, AppSync will invoke our `usersLambda`.
-    lambdaDataSource.createResolver({
+    lambdaDataSource.createResolver('registerUserResolver', {
       typeName: 'Mutation',
       fieldName: 'registerUser',
     });
     
-    // We will add the login resolver later, as login can often be handled directly
-    // by the frontend with Cognito, but the resolver is here for completeness.
-    lambdaDataSource.createResolver({
+    lambdaDataSource.createResolver('loginResolver', {
         typeName: 'Mutation',
         fieldName: 'login',
     });
 
     // --- 6. Stack Outputs ---
-    // Print the necessary IDs and endpoints to the terminal after deployment.
     new cdk.CfnOutput(this, 'GraphQLApiUrl', {
         value: api.graphqlUrl
     });

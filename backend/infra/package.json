@@ -13,6 +13,12 @@
   "devDependencies": {
     "@aws-cdk/aws-appsync": "^1.204.0",
     "@aws-cdk/aws-cognito": "^1.204.0",
-    "@aws-cdk/aws-lambda": "^1.204.0"
+    "@aws-cdk/aws-lambda": "^1.204.0",
+    "@types/node": "^24.2.1",
+    "aws-cdk-lib": "^2.210.0",
+    "constructs": "^10.4.2"
+  },
+  "dependencies": {
+    "source-map-support": "^0.5.21"
   }
 }
