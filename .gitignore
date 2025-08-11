@@ -18,7 +18,7 @@ pnpm-lock.yaml
 /build/
 
 # AWS CDK output
-/cdk.out/
+**/cdk.out/
 
 # =============================================================================
 # Environment Variables
