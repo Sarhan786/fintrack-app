@@ -3,9 +3,8 @@ import { Construct } from 'constructs';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as appsync from 'aws-cdk-lib/aws-appsync';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as path from 'path';
-
-// Note: We now import from 'aws-cdk-lib' and 'constructs', not '@aws-cdk/core'.
 
 export class InfraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -37,7 +36,7 @@ export class InfraStack extends cdk.Stack {
         requireLowercase: true,
         requireUppercase: true,
         requireDigits: true,
-        requireSymbols: false, // Set to false for simplicity during development
+        requireSymbols: false,
       },
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
@@ -51,7 +50,9 @@ export class InfraStack extends cdk.Stack {
     // --- 3. AWS AppSync GraphQL API ---
     const api = new appsync.GraphqlApi(this, 'FintrackGraphQLApi', {
       name: 'fintrack-graphql-api',
-      schema: appsync.SchemaFile.fromAsset(path.join(__dirname, 'schema.graphql')),
+      definition: appsync.Definition.fromSchema(
+        appsync.SchemaFile.fromAsset(path.join(__dirname, 'schema.graphql'))
+      ),
       authorizationConfig: {
         defaultAuthorization: {
           authorizationType: appsync.AuthorizationType.USER_POOL,
@@ -63,16 +64,25 @@ export class InfraStack extends cdk.Stack {
     });
 
     // --- 4. `users-service` Lambda Function ---
-    // Placeholder code for now. We will add real code in the next step.
-    const usersLambda = new lambda.Function(this, 'UsersServiceLambda', {
-      runtime: lambda.Runtime.NODEJS_18_X, // This is now correct with CDK v2
-      handler: 'index.handler',
-      code: lambda.Code.fromAsset(path.join(__dirname, '../../services/users-service/src')), // Pointing to src for now
+    const usersLambda = new NodejsFunction(this, 'UsersServiceLambda', {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      handler: 'handler',
+      entry: path.join(__dirname, '../../services/users-service/src/index.ts'),
+      
+      bundling: {
+        externalModules: ['@aws-sdk/client-cognito-identity-provider'],
+        // FIX: This tells the CDK to build the function without using Docker.
+        forceDockerBundling: false,
+      },
+      
       environment: {
         USER_POOL_ID: userPool.userPoolId,
         USER_POOL_CLIENT_ID: userPoolClient.userPoolClientId,
       }
     });
+
+    // --- Grant the Lambda function permission to interact with the Cognito User Pool ---
+    userPool.grant(usersLambda, 'cognito-idp:AdminCreateUser');
 
     // --- 5. Connect Lambda to AppSync API ---
     const lambdaDataSource = api.addLambdaDataSource('UsersLambdaDataSource', usersLambda);

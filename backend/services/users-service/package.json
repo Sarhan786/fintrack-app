@@ -1,0 +1,9 @@
+{
+  "name": "users-service",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.865.0"
+  }
+}
