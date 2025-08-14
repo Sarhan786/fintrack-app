@@ -67,7 +67,7 @@ export class InfraStack extends cdk.Stack {
     const usersLambda = new NodejsFunction(this, 'UsersServiceLambda', {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'handler',
-      entry: path.join(__dirname, '../../services/users-service/src/index.ts'),
+      entry: path.join(__dirname, '../../lamdas/users-service/src/handlers/index.ts'),
       
       bundling: {
         externalModules: ['@aws-sdk/client-cognito-identity-provider'],

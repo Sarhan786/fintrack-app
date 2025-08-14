@@ -4,6 +4,7 @@
   "main": "src/index.ts",
   "license": "MIT",
   "dependencies": {
-    "@aws-sdk/client-cognito-identity-provider": "^3.865.0"
+    "@aws-sdk/client-cognito-identity-provider": "^3.865.0",
+    "dotenv": "^17.2.1"
   }
 }
