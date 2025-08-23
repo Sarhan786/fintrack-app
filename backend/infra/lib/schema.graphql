@@ -1,30 +1,53 @@
+# Auth Schema
+
 type User {
-    id: ID!
-    email: String!
-    name: String!
+  id: ID!
+  email: String!
+  name: String!
 }
 
 input RegisterUserInput {
-    name: String!
-    email: String!
-    password: String!
+  name: String!
+  email: String!
+  password: String!
 }
 
 input LoginInput {
-    email: String!
-    password: String!
+  email: String!
+  password: String!
 }
 
 type AuthPayload {
-    accessToken: String!
-    user: User!
+  accessToken: String!
+  user: User!
+}
+
+type Transaction {
+  id: ID!
+  userId: ID!
+  amount: Float!
+  category: String!
+  date: String!
+  description: String
+  type: String! # "income" or "expense"
+}
+
+input CreateTransactionInput {
+  amount: Float!
+  category: String!
+  date: String! # ISO 8601 format: "YYYY-MM-DD"
+  description: String
+  type: String!
+}
+
+# Add new queries and mutations
+type Query {
+  getMe: User
+  listTransactions: [Transaction]
 }
 
 type Mutation {
-    registerUser(input: RegisterUserInput!): User
-    login(input: LoginInput!): AuthPayload
-}
-
-type Query {
-    getMe: User
+  registerUser(input: RegisterUserInput!): User
+  login(input: LoginInput!): AuthPayload
+  createTransaction(input: CreateTransactionInput!): Transaction
 }

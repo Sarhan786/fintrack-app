@@ -10,9 +10,10 @@ import {
   Alert,
 } from "@mui/material";
 import WalletIcon from "@mui/icons-material/Wallet";
+import { SignUpStep } from "./SignUpPage.type";
 
 export default function SignUpPage() {
-  const [step, setStep] = useState(1); // 1 for signup, 2 for confirmation
+  const [step, setStep] = useState<SignUpStep>(1);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -36,7 +37,7 @@ export default function SignUpPage() {
           },
         },
       });
-      setStep(2); // Move to confirmation step
+      setStep(2);
     } catch (err: any) {
       setError(err.message);
     } finally {
