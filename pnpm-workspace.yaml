@@ -1,5 +1,5 @@
 packages:
-  - 'frontend/*'
-  - 'backend/services/*'
-  - 'backend/infra'
-  - 'packages/*'
+  - "frontend/*"
+  - "backend/lambdas/*"
+  - "backend/infra"
+  - "packages/*"
