@@ -1,15 +1,10 @@
 import { useState } from "react";
 import { signIn } from "aws-amplify/auth";
 import { useNavigate, Link } from "react-router-dom";
-import {
-  Container,
-  Box,
-  TextField,
-  Button,
-  Typography,
-  Alert,
-} from "@mui/material";
+import { Container, TextField, Button, Typography, Alert } from "@mui/material";
 import WalletIcon from "@mui/icons-material/Wallet";
+import { AuthPageWrapper, AuthForm } from "./LoginPage.styles";
+import { useTranslation } from "react-i18next";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -17,6 +12,14 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const { t } = useTranslation();
+  const welcomeText = t("loginPage.title");
+  const emailLabelText = t("loginPage.emailLabel");
+  const passwordLabelText = t("loginPage.passwordLabel");
+  const loginText = t("loginPage.buttonText");
+  const loadingButtonText = t("loginPage.loadingButtonText");
+  const signupPrompt = t("loginPage.signupPrompt");
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,14 +39,7 @@ export default function LoginPage() {
 
   return (
     <Container component="main" maxWidth="xs">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
+      <AuthPageWrapper>
         <WalletIcon
           sx={{
             m: 1,
@@ -55,15 +51,15 @@ export default function LoginPage() {
           }}
         />
         <Typography component="h1" variant="h5">
-          Welcome Back!
+          {welcomeText}
         </Typography>
-        <Box component="form" onSubmit={handleSignIn} sx={{ mt: 3 }}>
+        <AuthForm onSubmit={handleSignIn}>
           <TextField
             margin="normal"
             required
             fullWidth
             id="email"
-            label="Email Address"
+            label={emailLabelText}
             name="email"
             autoComplete="email"
             autoFocus
@@ -75,7 +71,7 @@ export default function LoginPage() {
             required
             fullWidth
             name="password"
-            label="Password"
+            label={passwordLabelText}
             type="password"
             id="password"
             autoComplete="current-password"
@@ -94,13 +90,13 @@ export default function LoginPage() {
             sx={{ mt: 3, mb: 2 }}
             disabled={loading}
           >
-            {loading ? "Logging In..." : "Login"}
+            {loading ? loadingButtonText : loginText}
           </Button>
           <Typography variant="body2" align="center">
-            <Link to="/signup">Don't have an account? Sign Up</Link>
+            <Link to="/signup">{signupPrompt}</Link>
           </Typography>
-        </Box>
-      </Box>
+        </AuthForm>
+      </AuthPageWrapper>
     </Container>
   );
 }

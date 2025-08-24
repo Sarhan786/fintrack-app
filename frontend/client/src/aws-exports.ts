@@ -3,6 +3,7 @@ const {
   VITE_USER_POOL_CLIENT_ID,
   VITE_GRAPHQL_API_URL,
   VITE_AWS_REGION,
+  VITE_AWS_DEFAULT_AUTH_MODE,
 } = import.meta.env;
 
 export const awsconfig = {
@@ -16,7 +17,7 @@ export const awsconfig = {
     GraphQL: {
       endpoint: VITE_GRAPHQL_API_URL, // e.g., 'https://xxxxxxxx.appsync-api.ap-south-1.amazonaws.com/graphql'
       region: VITE_AWS_REGION, // Or your AWS region
-      defaultAuthMode: "userPool",
+      defaultAuthMode: VITE_AWS_DEFAULT_AUTH_MODE,
     },
   },
 };

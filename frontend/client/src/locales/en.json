@@ -1,0 +1,53 @@
+{
+  "common": {
+    "appName": "FinTrack",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "layout": {
+    "dashboard": "Dashboard",
+    "transactions": "Transactions"
+  },
+  "loginPage": {
+    "title": "Welcome Back!",
+    "emailLabel": "Email Address",
+    "passwordLabel": "Password",
+    "buttonText": "Login",
+    "loadingButtonText": "Logging In...",
+    "signupPrompt": "Don't have an account? Sign Up"
+  },
+  "signUpPage": {
+    "createTitle": "Create Account",
+    "confirmTitle": "Confirm Your Email",
+    "nameLabel": "Full Name",
+    "emailLabel": "Email Address",
+    "passwordLabel": "Password",
+    "buttonText": "Sign Up",
+    "loadingButtonText": "Signing Up...",
+    "loginPrompt": "Already have an account? Login",
+    "confirmationMessage": "A confirmation code has been sent to {{email}}.",
+    "confirmationCodeLabel": "Confirmation Code",
+    "confirmButtonText": "Confirm Sign Up",
+    "confirmingButtonText": "Confirming...",
+    "successMessage": "Account confirmed successfully! Please log in."
+  },
+  "dashboardPage": {
+    "title": "Dashboard",
+    "addTransaction": "Add Transaction",
+    "recentTransactions": "Recent Transactions",
+    "loadingError": "Failed to fetch transactions."
+  },
+  "addTransactionModal": {
+    "title": "Add New Transaction",
+    "amountLabel": "Amount",
+    "categoryLabel": "Category",
+    "descriptionLabel": "Description",
+    "dateLabel": "Date",
+    "typeLabel": "Type",
+    "expense": "Expense",
+    "income": "Income",
+    "saveButton": "Save Transaction",
+    "transactionFailedError": "Failed to create transaction."
+  }
+}

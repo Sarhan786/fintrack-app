@@ -1,16 +1,11 @@
 import { useState } from "react";
 import { signUp, confirmSignUp } from "aws-amplify/auth";
 import { useNavigate, Link } from "react-router-dom";
-import {
-  Container,
-  Box,
-  TextField,
-  Button,
-  Typography,
-  Alert,
-} from "@mui/material";
+import { Container, TextField, Button, Typography, Alert } from "@mui/material";
 import WalletIcon from "@mui/icons-material/Wallet";
-import { SignUpStep } from "./SignUpPage.type";
+import { SignUpStep } from "./SignUpPage.types";
+import { AuthPageWrapper, AuthForm } from "./SignUpPage.styles";
+import { useTranslation } from "react-i18next";
 
 export default function SignUpPage() {
   const [step, setStep] = useState<SignUpStep>(1);
@@ -21,6 +16,21 @@ export default function SignUpPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const { t } = useTranslation();
+  const createTitle = t("signUpPage.createTitle");
+  const confirmTitle = t("signUpPage.confirmTitle");
+  const nameLabel = t("signUpPage.nameLabel");
+  const emailLabel = t("signUpPage.emailLabel");
+  const passwordLabel = t("signUpPage.passwordLabel");
+  const SignupButtonText = t("signUpPage.buttonText");
+  const loadingButtonText = t("signUpPage.loadingButtonText");
+  const loginPrompt = t("signUpPage.loginPrompt");
+  const confirmationMessage = t("signUpPage.confirmationMessage", { email });
+  const confirmationCodeLabel = t("signUpPage.confirmationCodeLabel");
+  const confirmButtonText = t("signUpPage.confirmButtonText");
+  const confirmingButtonText = t("signUpPage.confirmingButtonText");
+  const successMessage = t("signUpPage.successMessage");
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +61,7 @@ export default function SignUpPage() {
     setLoading(true);
     try {
       await confirmSignUp({ username: email, confirmationCode });
-      alert("Account confirmed successfully! Please log in.");
+      alert(successMessage);
       navigate("/login");
     } catch (err: any) {
       setError(err.message);
@@ -62,14 +72,7 @@ export default function SignUpPage() {
 
   return (
     <Container component="main" maxWidth="xs">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
+      <AuthPageWrapper>
         <WalletIcon
           sx={{
             m: 1,
@@ -81,17 +84,17 @@ export default function SignUpPage() {
           }}
         />
         <Typography component="h1" variant="h5">
-          {step === 1 ? "Create Account" : "Confirm Your Email"}
+          {step === 1 ? createTitle : confirmTitle}
         </Typography>
 
         {step === 1 && (
-          <Box component="form" onSubmit={handleSignUp} sx={{ mt: 3 }}>
+          <AuthForm onSubmit={handleSignUp}>
             <TextField
               margin="normal"
               required
               fullWidth
               id="name"
-              label="Full Name"
+              label={nameLabel}
               name="name"
               autoComplete="name"
               autoFocus
@@ -103,7 +106,7 @@ export default function SignUpPage() {
               required
               fullWidth
               id="email"
-              label="Email Address"
+              label={emailLabel}
               name="email"
               autoComplete="email"
               value={email}
@@ -114,7 +117,7 @@ export default function SignUpPage() {
               required
               fullWidth
               name="password"
-              label="Password"
+              label={passwordLabel}
               type="password"
               id="password"
               autoComplete="new-password"
@@ -133,25 +136,25 @@ export default function SignUpPage() {
               sx={{ mt: 3, mb: 2 }}
               disabled={loading}
             >
-              {loading ? "Signing Up..." : "Sign Up"}
+              {loading ? loadingButtonText : SignupButtonText}
             </Button>
             <Typography variant="body2" align="center">
-              <Link to="/login">Already have an account? Login</Link>
+              <Link to="/login">{loginPrompt}</Link>
             </Typography>
-          </Box>
+          </AuthForm>
         )}
 
         {step === 2 && (
-          <Box component="form" onSubmit={handleConfirmSignUp} sx={{ mt: 3 }}>
+          <AuthForm onSubmit={handleConfirmSignUp}>
             <Typography sx={{ textAlign: "center", mb: 2 }}>
-              A confirmation code has been sent to {email}.
+              {confirmationMessage}
             </Typography>
             <TextField
               margin="normal"
               required
               fullWidth
               id="confirmationCode"
-              label="Confirmation Code"
+              label={confirmationCodeLabel}
               name="confirmationCode"
               autoFocus
               value={confirmationCode}
@@ -169,11 +172,11 @@ export default function SignUpPage() {
               sx={{ mt: 3, mb: 2 }}
               disabled={loading}
             >
-              {loading ? "Confirming..." : "Confirm Sign Up"}
+              {loading ? confirmingButtonText : confirmButtonText}
             </Button>
-          </Box>
+          </AuthForm>
         )}
-      </Box>
+      </AuthPageWrapper>
     </Container>
   );
 }
