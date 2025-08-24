@@ -11,6 +11,10 @@ import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
+import ShowChartIcon from "@mui/icons-material/ShowChart";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import AssessmentIcon from "@mui/icons-material/Assessment";
+import SettingsIcon from "@mui/icons-material/Settings";
 import { RootBox, AppBar, Drawer, NavBox, MainContent } from "./Layout.styles";
 
 const navItems = [
@@ -23,6 +27,26 @@ const navItems = [
     text: "layout.transactions",
     icon: <SwapHorizIcon />,
     path: "/transactions",
+  },
+  {
+    text: "layout.investments",
+    icon: <ShowChartIcon />,
+    path: "/investments",
+  },
+  {
+    text: "layout.liabilities",
+    icon: <AccountBalanceIcon />,
+    path: "/liabilities",
+  },
+  {
+    text: "layout.reports",
+    icon: <AssessmentIcon />,
+    path: "/reports",
+  },
+  {
+    text: "layout.settings",
+    icon: <SettingsIcon />,
+    path: "/settings",
   },
 ];
 

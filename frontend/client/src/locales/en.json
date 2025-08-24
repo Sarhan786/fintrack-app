@@ -7,7 +7,11 @@
   },
   "layout": {
     "dashboard": "Dashboard",
-    "transactions": "Transactions"
+    "transactions": "Transactions",
+    "investments": "Investments",
+    "liabilities": "Liabilities",
+    "reports": "Reports",
+    "settings": "Settings"
   },
   "loginPage": {
     "title": "Welcome Back!",
@@ -36,7 +40,15 @@
     "title": "Dashboard",
     "addTransaction": "Add Transaction",
     "recentTransactions": "Recent Transactions",
-    "loadingError": "Failed to fetch transactions."
+    "loadingError": "Failed to fetch transactions.",
+    "incomeVsExpenseTitle": "Income vs Expense",
+    "categoryChartTitle": "Category Breakdown",
+    "expenseChartTitle": "Expense Breakdown"
+  },
+  "summaryCards": {
+    "income": "This Month's Income",
+    "expenses": "This Month's Expenses",
+    "balance": "Current Balance"
   },
   "addTransactionModal": {
     "title": "Add New Transaction",

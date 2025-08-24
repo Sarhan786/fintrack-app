@@ -20,3 +20,26 @@ export const TransactionListItem = styled("li")(({ theme }) => ({
   padding: theme.spacing(1.5, 0),
   borderBottom: `1px solid ${theme.palette.divider}`,
 }));
+
+export const ContentGrid = styled(Box)(({ theme }) => ({
+  display: "grid",
+  gridTemplateColumns: "repeat(1, 1fr)",
+  gap: theme.spacing(3),
+  [theme.breakpoints.up("lg")]: {
+    gridTemplateColumns: "repeat(5, 1fr)",
+  },
+}));
+
+export const MainContentArea = styled(Box)({
+  gridColumn: "span 1 / span 1",
+  "@media (min-width: 1024px)": {
+    gridColumn: "span 3 / span 3",
+  },
+});
+
+export const SideContentArea = styled(Box)({
+  gridColumn: "span 1 / span 1",
+  "@media (min-width: 1024px)": {
+    gridColumn: "span 2 / span 2",
+  },
+});
